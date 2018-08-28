@@ -3,12 +3,14 @@ import time
 
 class Sherlock():
     # Initialization function
-    def __init__(this, search_path='', max_threads=1024, search_file_names=True, search_file_contents=True):
-        this.unique_id = this._get_unique_id()
+    def __init__(this, search_path='', max_threads=1024, match_case=False, search_file_names=True, search_file_contents=True):
+        this.unique_id    = this._get_unique_id()
+        this.open_threads = 0
 
         this.search_path = search_path
         this.max_threads = max_threads
 
+        this.match_case           = match_case
         this.search_file_names    = search_file_names
         this.search_file_contents = search_file_contents
 
