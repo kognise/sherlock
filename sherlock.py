@@ -4,12 +4,13 @@ import threading
 
 class Sherlock():
     # Initialization function
-    def __init__(this, search_path='', max_threads=1024, match_case=False, search_file_names=True, search_file_contents=True):
+    def __init__(this, search_path='', max_threads=1024, exclude=[], match_case=False, search_file_names=True, search_file_contents=True):
         this.unique_id    = this._get_unique_id()
         this.open_threads = 0
 
         this.search_path = search_path
         this.max_threads = max_threads
+        this.exclusions  = exclude
 
         this.match_case           = match_case
         this.search_file_names    = search_file_names
@@ -30,6 +31,9 @@ class Sherlock():
         this.search_directory(this.search_path, string)
 
     def search_file(this, file_path, file_name, string):
+        if this._should_exclude(file_path):
+            return
+
         if this.search_file_names:
             if this._search_string(string, file_name):
                 this.log('Found in "%s" name.' % file_path)
@@ -43,6 +47,9 @@ class Sherlock():
         return
 
     def search_directory(this, directory_path, string):
+        if this._should_exclude(directory_path):
+            return
+
         try:
             for entry in os.scandir(directory_path):
                 if entry.is_file():
@@ -107,7 +114,8 @@ class Sherlock():
 
 
     def _should_exclude(this, string):
-        for excusion in this.exclusions:
+        for exclusion in this.exclusions:
             if string.find(exclusion) >= 0:
-                return true
-        return false
+                return True
+
+        return False
