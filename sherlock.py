@@ -32,24 +32,22 @@ class Sherlock():
     def search_file(this, file_path, file_name, string):
         if this.search_file_names:
             if this._search_string(string, file_name):
-                this.log('Found in "%s" name.')
+                this.log('Found in "%s" name.' % file_path)
 
         if this.search_file_contents:
-            file_contents = this._file_get_contents(path)
+            file_contents = this._file_get_contents(file_path)
 
             if this._search_string(string, file_contents):
-                this.log('Found in "%s" contents.')
+                this.log('Found in "%s" contents.' % file_path)
 
         return
 
     def search_directory(this, directory_path, string):
-        for (entry in os.scandir(directory_path)):
+        for entry in os.scandir(directory_path):
             if entry.is_file():
                 this._start_thread(this.search_file, (entry.path, entry.name, string))
-                # TODO: Check if I have to pass this as the first argument.
             else:
                 this._start_thread(this.search_directory, (entry.path, string))
-                # TODO: Check if I have to pass this as the first argument. (Again :)
 
         return
 
@@ -75,7 +73,7 @@ class Sherlock():
 
     def _file_get_contents(this, path):
         try:
-            file = open(path, 'rb')
+            file = open(path, 'r')
             contents = file.read()
             file.close()
         except:
@@ -92,8 +90,9 @@ class Sherlock():
 
     def _start_thread(this, function, arguments):
         while this.open_threads < this.max_threads:
-            thread = threading.Thread(target=_really_start_thread, args=(function, arguments))
+            thread = threading.Thread(target=this._really_start_thread, args=(function, arguments))
             thread.start()
+            return
 
     def _really_start_thread(this, function, arguments):
         thread = threading.Thread(target=function, args=arguments)
@@ -101,5 +100,4 @@ class Sherlock():
         this.open_threads += 1
         thread.join()
         this.open_threads -= 1
-        print('[*] Thread done!')
         return
