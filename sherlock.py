@@ -17,6 +17,7 @@ class Sherlock():
         if (search_path == '' or max_threads <= 0 or (search_file_names == false and search_file_contents == false)):
             this.log('Nothing to do.')
             return
+            
         if (not os.path.exists(search_path)):
             this.log('Search path doesn\'t exist.')
             return
