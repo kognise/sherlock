@@ -104,3 +104,10 @@ class Sherlock():
         thread.join()
         this.open_threads -= 1
         return
+
+
+    def _should_exclude(this, string):
+        for excusion in this.exclusions:
+            if string.find(exclusion) >= 0:
+                return true
+        return false
