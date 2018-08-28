@@ -29,7 +29,7 @@ class Sherlock():
     def log(this, message):
         string = '[%s] %s' % (this._get_time(), message)
         file = open('sherlock-%s.log' % this.unique_id, 'a')
-        file.write(string)
+        file.write('%s\n' % string)
         file.close()
         print(string)
 
