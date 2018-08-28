@@ -1,5 +1,6 @@
 import os
 import time
+import threading
 
 class Sherlock():
     # Initialization function
@@ -15,16 +16,42 @@ class Sherlock():
         this.search_file_contents = search_file_contents
 
     # Main functions
-    def start(this):
-        if (search_path == '' or max_threads <= 0 or (search_file_names == false and search_file_contents == false)):
+    def start(this, string=''):
+        this.log('Searching path "%s" for string "%s".' % (this.search_path, string))
+
+        if this.search_path == '' or string == '' or this.max_threads <= 0 or (this.search_file_names == False and this.search_file_contents == False):
             this.log('Nothing to do.')
             return
-            
-        if (not os.path.exists(search_path)):
+
+        if not os.path.exists(this.search_path):
             this.log('Search path doesn\'t exist.')
             return
 
-        # Do things.
+        this.search_directory(this.search_path, string)
+
+    def search_file(this, file_path, file_name, string):
+        if this.search_file_names:
+            if this._search_string(string, file_name):
+                this.log('Found in "%s" name.')
+
+        if this.search_file_contents:
+            file_contents = this._file_get_contents(path)
+
+            if this._search_string(string, file_contents):
+                this.log('Found in "%s" contents.')
+
+        return
+
+    def search_directory(this, directory_path, string):
+        for (entry in os.scandir(directory_path)):
+            if entry.is_file():
+                this._start_thread(this.search_file, (entry.path, entry.name, string))
+                # TODO: Check if I have to pass this as the first argument.
+            else:
+                this._start_thread(this.search_directory, (entry.path, string))
+                # TODO: Check if I have to pass this as the first argument. (Again :)
+
+        return
 
     def log(this, message):
         string = '[%s] %s' % (this._get_time(), message)
@@ -64,8 +91,9 @@ class Sherlock():
         return search_in.find(search_for) >= 0
 
     def _start_thread(this, function, arguments):
-        thread = threading.Thread(target=_really_start_thread, args=(function, arguments))
-        thread.start()
+        while this.open_threads < this.max_threads:
+            thread = threading.Thread(target=_really_start_thread, args=(function, arguments))
+            thread.start()
 
     def _really_start_thread(this, function, arguments):
         thread = threading.Thread(target=function, args=arguments)
