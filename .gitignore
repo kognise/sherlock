@@ -104,4 +104,4 @@ venv.bak/
 .mypy_cache/
 
 # Sherlock-generated logs
-*.log
+sherlock-*.log
