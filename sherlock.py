@@ -42,3 +42,13 @@ class Sherlock():
         output_string = time.strftime(format_string)
 
         return output_string
+
+    def _file_get_contents(this, path):
+        try:
+            file = open(path, 'rb')
+            contents = file.read()
+            file.close()
+        except:
+            contents = ''
+
+        return contents
