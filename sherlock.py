@@ -53,3 +53,23 @@ class Sherlock():
             contents = ''
 
         return contents
+
+    def _search_string(this, search_for, search_in):
+        if not this.match_case:
+            search_for = search_for.lower()
+            search_in  = search_in.lower()
+
+        return search_in.find(search_for) >= 0
+
+    def _start_thread(this, function, arguments):
+        thread = threading.Thread(target=_really_start_thread, args=(function, arguments))
+        thread.start()
+
+    def _really_start_thread(this, function, arguments):
+        thread = threading.Thread(target=function, args=arguments)
+        thread.start()
+        this.open_threads += 1
+        thread.join()
+        this.open_threads -= 1
+        print('[*] Thread done!')
+        return
