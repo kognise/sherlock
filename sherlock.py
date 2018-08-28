@@ -43,11 +43,14 @@ class Sherlock():
         return
 
     def search_directory(this, directory_path, string):
-        for entry in os.scandir(directory_path):
-            if entry.is_file():
-                this._start_thread(this.search_file, (entry.path, entry.name, string))
-            else:
-                this._start_thread(this.search_directory, (entry.path, string))
+        try:
+            for entry in os.scandir(directory_path):
+                if entry.is_file():
+                    this._start_thread(this.search_file, (entry.path, entry.name, string))
+                else:
+                    this._start_thread(this.search_directory, (entry.path, string))
+        except:
+            pass
 
         return
 
