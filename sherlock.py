@@ -56,8 +56,11 @@ class Sherlock():
                     this._start_thread(this.search_file, (entry.path, entry.name, string))
                 else:
                     this._start_thread(this.search_directory, (entry.path, string))
-        except:
-            pass
+        except IOError as e:
+            # TODO: Check with python 3.
+            if e.errno == errno.EACCES:
+                pass
+            raise
 
         return
 
