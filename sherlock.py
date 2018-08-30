@@ -1,10 +1,11 @@
 import os
 import time
 import threading
+import independent
 
 class Sherlock():
     # Initialization function
-    def __init__(this, search_path='', max_threads=1024, exclude=[], match_case=False, search_file_names=True, search_file_contents=True):
+    def __init__(this, search_path='', max_threads=1024, exclude=[], match_case=False, search_file_names=True, search_file_contents=True, verbose=False):
         this.unique_id    = this._get_unique_id()
         this.open_threads = 0
 
@@ -15,6 +16,8 @@ class Sherlock():
         this.match_case           = match_case
         this.search_file_names    = search_file_names
         this.search_file_contents = search_file_contents
+
+        this.verbose = verbose
 
     # Main functions
     def start(this, string=''):
@@ -32,6 +35,7 @@ class Sherlock():
 
     def search_file(this, file_path, file_name, string):
         if this._should_exclude(file_path):
+            this.verbose_log('Excluded file "%s".' % file_path)
             return
 
         if this.search_file_names:
@@ -48,17 +52,26 @@ class Sherlock():
 
     def search_directory(this, directory_path, string):
         if this._should_exclude(directory_path):
+            this.verbose_log('Excluded directory "%s".' % directory_path)
             return
 
         try:
-            for entry in os.scandir(directory_path):
-                if entry.is_file():
-                    this._start_thread(this.search_file, (entry.path, entry.name, string))
-                else:
-                    this._start_thread(this.search_directory, (entry.path, string))
+            if independent.version == 3:
+                for entry in os.scandir(directory_path):
+                    if entry.is_file():
+                        this._start_thread(this.search_file, (entry.path, entry.name, string))
+                    else:
+                        this._start_thread(this.search_directory, (entry.path, string))
+            else:
+                for base, files, directories in os.walk(directory_path):
+                    for file in files:
+                        this._start_thread(this.search_file, (os.path.join(base, file), file, string))
+                    for directory in directories:
+                        this._start_thread(this.search_directory, (os.path.join(base, directory), string))
         except IOError as e:
             # TODO: Check with python 3.
             if e.errno == errno.EACCES:
+                this.verbose_log('Denied access to directory "%s"!' % directory_path)
                 pass
             raise
 
@@ -70,6 +83,10 @@ class Sherlock():
         file.write('%s\n' % string)
         file.close()
         print(string)
+
+    def verbose_log(this, message):
+        if this.verbose:
+            this.log(message)
 
     # Helper functions
     def _get_unique_id(this):
